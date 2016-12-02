@@ -1,2 +1,2 @@
-# DataCollecter
+# DataCollector
 DataCollector
