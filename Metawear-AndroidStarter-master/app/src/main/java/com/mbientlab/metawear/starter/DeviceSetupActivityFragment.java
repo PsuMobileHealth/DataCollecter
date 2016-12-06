@@ -38,19 +38,30 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.mbientlab.metawear.AsyncOperation;
+import com.mbientlab.metawear.Message;
 import com.mbientlab.metawear.MetaWearBleService;
 import com.mbientlab.metawear.MetaWearBoard;
+import com.mbientlab.metawear.RouteManager;
+import com.mbientlab.metawear.data.CartesianFloat;
+import com.mbientlab.metawear.module.Accelerometer;
+import com.mbientlab.metawear.UnsupportedModuleException;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
+    //toopazo @ 06-12-2016
+    Accelerometer accModule;
+
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
     }
@@ -107,5 +118,48 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     /**
      * Called when the mwBoard field is ready to be used
      */
-    public void ready() {}
+    public void ready() {
+        try {
+            accModule = mwBoard.getModule(Accelerometer.class);
+            // Set the output data rate to 25Hz or closet valid value
+            accModule.setOutputDataRate(25.f);
+        } catch (UnsupportedModuleException e) {
+            Snackbar.make(getActivity().findViewById(R.id.device_setup_fragment), e.getMessage(),
+                    Snackbar.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        view.findViewById(R.id.acc_start).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                accModule.routeData().fromAxes().stream("acc_stream").commit()
+                        .onComplete(new AsyncOperation.CompletionHandler<RouteManager>() {
+                            @Override
+                            public void success(RouteManager result) {
+                                result.subscribe("acc_stream", new RouteManager.MessageHandler() {
+                                    @Override
+                                    public void process(Message msg) {
+                                        Log.i("tutorial", msg.getData(CartesianFloat.class).toString());
+                                    }
+                                });
+
+                                accModule.enableAxisSampling();
+                                accModule.start();
+                            }
+                        });
+            }
+        });
+        view.findViewById(R.id.acc_stop).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                accModule.stop();
+                accModule.disableAxisSampling();
+                mwBoard.removeRoutes();
+            }
+        });
+    }
 }
