@@ -53,14 +53,18 @@ import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.RouteManager;
 import com.mbientlab.metawear.data.CartesianFloat;
 import com.mbientlab.metawear.module.Accelerometer;
+import com.mbientlab.metawear.module.Led;
 import com.mbientlab.metawear.UnsupportedModuleException;
 
+import static com.mbientlab.metawear.AsyncOperation.CompletionHandler;
 /**
  * A placeholder fragment containing a simple view.
  */
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     //toopazo @ 06-12-2016
     Accelerometer accModule;
+    Led LedModule;
+    String devInfo;
 
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
@@ -120,7 +124,19 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
      */
     public void ready() {
         try {
+            //MetaWearBoard.DeviceInformation.serialNumber()
+            mwBoard.readDeviceInformation().onComplete(new CompletionHandler<MetaWearBoard.DeviceInformation>() {
+                @Override
+                public void success(MetaWearBoard.DeviceInformation result) {
+                    //Log.i("test", "Device Information: " + result.toString());
+                    //result.firmwareRevision();
+                    //result.serialNumber();
+                    devInfo = result.toString();
+                }
+            });
             accModule = mwBoard.getModule(Accelerometer.class);
+            LedModule = mwBoard.getModule(Led.class);
+            //LedModule.
             // Set the output data rate to 25Hz or closet valid value
             accModule.setOutputDataRate(25.f);
         } catch (UnsupportedModuleException e) {
@@ -143,7 +159,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                                 result.subscribe("acc_stream", new RouteManager.MessageHandler() {
                                     @Override
                                     public void process(Message msg) {
-                                        Log.i("tutorial", msg.getData(CartesianFloat.class).toString());
+                                        Log.i("DataCollector", devInfo+", acc_stream: "+msg.getData(CartesianFloat.class).toString());
                                     }
                                 });
 

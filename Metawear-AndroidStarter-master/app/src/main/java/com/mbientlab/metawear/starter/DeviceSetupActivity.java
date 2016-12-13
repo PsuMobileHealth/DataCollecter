@@ -171,8 +171,8 @@ public class DeviceSetupActivity extends AppCompatActivity implements ServiceCon
 
     @Override
     public void onBackPressed() {
-        mwBoard.setConnectionStateHandler(null);
-        mwBoard.disconnect();
+        //mwBoard.setConnectionStateHandler(null);
+        //mwBoard.disconnect();
         super.onBackPressed();
     }
 

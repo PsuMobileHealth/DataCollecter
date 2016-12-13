@@ -44,4 +44,5 @@
         android:name="com.mbientlab.bletoolbox.scanner.BleScannerFragment"
         tools:layout="@layout/blescan_device_list" android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 </RelativeLayout>
