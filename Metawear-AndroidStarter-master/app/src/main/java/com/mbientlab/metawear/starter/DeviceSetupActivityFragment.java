@@ -62,6 +62,8 @@ import com.mbientlab.metawear.module.Led;
 
 import java.util.ArrayList;
 
+import java.util.ArrayList;
+
 import static com.mbientlab.metawear.AsyncOperation.CompletionHandler;
 /**
  * A placeholder fragment containing a simple view.
