@@ -161,8 +161,10 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                                 result.subscribe("acc_stream", new RouteManager.MessageHandler() {
                                     @Override
                                     public void process(Message msg) {
-                                        Log.i("DataCollector", devInfo+", acc_stream: "+msg.getData(CartesianFloat.class).toString());
+                                        //Log.i("DataCollector", devInfo+", acc_stream: "+ msg.getData(CartesianFloat.class).toString());
+                                        Log.i("The Coordinates are: ", extractCoord(msg.getData(CartesianFloat.class).toString()));
                                     }
+
                                 });
 
                                 accModule.enableAxisSampling();
