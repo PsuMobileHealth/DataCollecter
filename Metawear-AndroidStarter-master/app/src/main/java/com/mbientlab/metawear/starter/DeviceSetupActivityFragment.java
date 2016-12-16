@@ -52,9 +52,13 @@ import com.mbientlab.metawear.MetaWearBleService;
 import com.mbientlab.metawear.MetaWearBoard;
 import com.mbientlab.metawear.RouteManager;
 import com.mbientlab.metawear.data.CartesianFloat;
-import com.mbientlab.metawear.module.Accelerometer;
-import com.mbientlab.metawear.module.Led;
 import com.mbientlab.metawear.UnsupportedModuleException;
+import com.mbientlab.metawear.module.Accelerometer;
+//import com.mbientlab.metawear.module.AmbientLight;
+import com.mbientlab.metawear.module.Barometer;
+import com.mbientlab.metawear.module.Gyro;
+import com.mbientlab.metawear.module.Temperature;
+import com.mbientlab.metawear.module.Led;
 
 import static com.mbientlab.metawear.AsyncOperation.CompletionHandler;
 /**
@@ -63,6 +67,9 @@ import static com.mbientlab.metawear.AsyncOperation.CompletionHandler;
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     //toopazo @ 06-12-2016
     Accelerometer accModule;
+    Barometer baromModule;
+    Gyro gyroModule;
+    Temperature tempModule;
     Led LedModule;
     String devInfo;
 
@@ -134,11 +141,17 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     devInfo = result.toString();
                 }
             });
-            accModule = mwBoard.getModule(Accelerometer.class);
-            LedModule = mwBoard.getModule(Led.class);
-            //LedModule.
             // Set the output data rate to 25Hz or closet valid value
+            accModule = mwBoard.getModule(Accelerometer.class);
             accModule.setOutputDataRate(25.f);
+            baromModule = mwBoard.getModule(Barometer.class);
+            //baromModule.setOutputDataRate(25.f);
+            gyroModule = mwBoard.getModule(Gyro.class);
+            gyroModule.setOutputDataRate(25.f);
+            tempModule = mwBoard.getModule(Temperature.class);
+            //tempModule.setOutputDataRate(25.f);
+            //LedModule = mwBoard.getModule(Led.class);
+            //ledModule.setOutputDataRate(25.f);
         } catch (UnsupportedModuleException e) {
             Snackbar.make(getActivity().findViewById(R.id.device_setup_fragment), e.getMessage(),
                     Snackbar.LENGTH_SHORT).show();
