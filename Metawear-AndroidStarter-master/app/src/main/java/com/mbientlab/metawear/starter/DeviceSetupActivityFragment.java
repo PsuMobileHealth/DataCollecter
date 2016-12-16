@@ -60,6 +60,8 @@ import com.mbientlab.metawear.module.Gyro;
 import com.mbientlab.metawear.module.Temperature;
 import com.mbientlab.metawear.module.Led;
 
+import java.util.ArrayList;
+
 import static com.mbientlab.metawear.AsyncOperation.CompletionHandler;
 /**
  * A placeholder fragment containing a simple view.
@@ -190,5 +192,12 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                 mwBoard.removeRoutes();
             }
         });
+    }
+    public String extractCoord (String str){
+        //char [] orig = str.toCharArray();
+        // ArrayList<Character> coord = new ArrayList<Character>();
+        String requiredString = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
+
+        return requiredString;
     }
 }
