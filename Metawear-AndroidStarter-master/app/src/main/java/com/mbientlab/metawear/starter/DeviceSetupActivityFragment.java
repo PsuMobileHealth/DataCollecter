@@ -59,12 +59,10 @@ import com.mbientlab.metawear.module.Barometer;
 import com.mbientlab.metawear.module.Gyro;
 import com.mbientlab.metawear.module.Temperature;
 import com.mbientlab.metawear.module.Led;
-
-import java.util.ArrayList;
-
-import java.util.ArrayList;
-
 import static com.mbientlab.metawear.AsyncOperation.CompletionHandler;
+import com.mbientlab.metawear.module.Led;
+import com.mbientlab.metawear.starter.GraphOpenglActivity;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -154,7 +152,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             gyroModule.setOutputDataRate(25.f);
             tempModule = mwBoard.getModule(Temperature.class);
             //tempModule.setOutputDataRate(25.f);
-            //LedModule = mwBoard.getModule(Led.class);
+            //L edModule = mwBoard.getModule(Led.class);
             //ledModule.setOutputDataRate(25.f);
         } catch (UnsupportedModuleException e) {
             Snackbar.make(getActivity().findViewById(R.id.device_setup_fragment), e.getMessage(),
@@ -196,6 +194,18 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                 mwBoard.removeRoutes();
             }
         });
+
+        view.findViewById(R.id.acc_graph).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /** Called when the user clicks the Send button */
+                Intent intent = new Intent(DeviceSetupActivityFragment.this.getActivity(), GraphOpenglActivity.class);
+                //EditText editText = (EditText) findViewById(R.id.edit_message);
+                //String message = editText.getText().toString();
+                //intent.putExtra(EXTRA_MESSAGE, message);
+                startActivity(intent);
+            }
+        });
     }
     public String extractCoord (String str){
         //char [] orig = str.toCharArray();
@@ -204,4 +214,5 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
 
         return requiredString;
     }
+
 }

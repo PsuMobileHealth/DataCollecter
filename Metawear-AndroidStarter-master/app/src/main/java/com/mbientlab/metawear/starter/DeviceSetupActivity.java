@@ -171,9 +171,11 @@ public class DeviceSetupActivity extends AppCompatActivity implements ServiceCon
 
     @Override
     public void onBackPressed() {
+        // toopazo: Commneting this lines prevents the disconnection of the device
+        // so that the sensor keep sending data
         //mwBoard.setConnectionStateHandler(null);
         //mwBoard.disconnect();
-        super.onBackPressed();
+        //super.onBackPressed();
     }
 
     @Override
