@@ -60,22 +60,20 @@ import com.mbientlab.metawear.module.Gyro;
 import com.mbientlab.metawear.module.Temperature;
 import com.mbientlab.metawear.module.Led;
 
-import java.util.ArrayList;
-
-import java.util.ArrayList;
-
 import static com.mbientlab.metawear.AsyncOperation.CompletionHandler;
 /**
  * A placeholder fragment containing a simple view.
  */
 public class DeviceSetupActivityFragment extends Fragment implements ServiceConnection {
     //toopazo @ 06-12-2016
-    Accelerometer accModule;
-    Barometer baromModule;
-    Gyro gyroModule;
-    Temperature tempModule;
-    Led LedModule;
-    String devInfo;
+    private static final String LOG_TAG = CommonUtils.BASE_TAG + CommonUtils.SEPARATOR + DeviceSetupActivityFragment.class.getName();
+    Accelerometer maccModule;
+    Barometer mbaromModule;
+    Gyro mgyroModule;
+    Temperature mtempModule;
+    Led mledModule;
+    String mdevInfo;
+    LocalFileHandler mlfh;
 
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
@@ -135,27 +133,46 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
      */
     public void ready() {
         try {
+            String arg = "Starting Board initialization";
+            Log.i(LOG_TAG, arg);
+            //Initialize Board and the data to be retreived from it
             //MetaWearBoard.DeviceInformation.serialNumber()
             mwBoard.readDeviceInformation().onComplete(new CompletionHandler<MetaWearBoard.DeviceInformation>() {
                 @Override
                 public void success(MetaWearBoard.DeviceInformation result) {
-                    //Log.i("test", "Device Information: " + result.toString());
+                    String arg = "Device Information: " + result.toString();
+                    Log.i(LOG_TAG, arg);
                     //result.firmwareRevision();
                     //result.serialNumber();
-                    devInfo = result.toString();
+                    mdevInfo = result.toString();
                 }
             });
             // Set the output data rate to 25Hz or closet valid value
-            accModule = mwBoard.getModule(Accelerometer.class);
-            accModule.setOutputDataRate(25.f);
-            baromModule = mwBoard.getModule(Barometer.class);
-            //baromModule.setOutputDataRate(25.f);
-            gyroModule = mwBoard.getModule(Gyro.class);
-            gyroModule.setOutputDataRate(25.f);
-            tempModule = mwBoard.getModule(Temperature.class);
-            //tempModule.setOutputDataRate(25.f);
-            //LedModule = mwBoard.getModule(Led.class);
+            maccModule = mwBoard.getModule(Accelerometer.class);
+            maccModule.setOutputDataRate(5.f);
+            mbaromModule = mwBoard.getModule(Barometer.class);
+            //mbaromModule.setOutputDataRate(25.f);
+            mgyroModule = mwBoard.getModule(Gyro.class);
+            mgyroModule.setOutputDataRate(5.f);
+            mtempModule = mwBoard.getModule(Temperature.class);
+            //mtempModule.setOutputDataRate(25.f);
+            //mledModule = mwBoard.getModule(Led.class);
             //ledModule.setOutputDataRate(25.f);
+
+            //Create LocalFile where data is to be saved
+            arg = "Create LocalFile where data is to be stored";
+            Log.i(LOG_TAG, arg);
+            mlfh = new LocalFileHandler();
+            String datetime = CommonUtils.get_datetime_filename();
+            mlfh.createFile(datetime+".txt");
+
+            //Append mdevInfo
+            mlfh.append_line_data(mdevInfo);
+
+            //End
+            arg = "End of Board initialization";
+            Log.i(LOG_TAG, arg);
+
         } catch (UnsupportedModuleException e) {
             Snackbar.make(getActivity().findViewById(R.id.device_setup_fragment), e.getMessage(),
                     Snackbar.LENGTH_SHORT).show();
@@ -166,33 +183,22 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.acc_start).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.button_data_start).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                accModule.routeData().fromAxes().stream("acc_stream").commit()
-                        .onComplete(new AsyncOperation.CompletionHandler<RouteManager>() {
-                            @Override
-                            public void success(RouteManager result) {
-                                result.subscribe("acc_stream", new RouteManager.MessageHandler() {
-                                    @Override
-                                    public void process(Message msg) {
-                                        //Log.i("DataCollector", devInfo+", acc_stream: "+ msg.getData(CartesianFloat.class).toString());
-                                        Log.i("The Coordinates are: ", extractCoord(msg.getData(CartesianFloat.class).toString()));
-                                    }
-
-                                });
-
-                                accModule.enableAxisSampling();
-                                accModule.start();
-                            }
-                        });
+                acceleration_start_onClick();
+                gyro_start_onClick();
             }
         });
-        view.findViewById(R.id.acc_stop).setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.button_data_stop).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                accModule.stop();
-                accModule.disableAxisSampling();
+                maccModule.stop();
+                maccModule.disableAxisSampling();
+
+                mgyroModule.stop();
+                //mgyroModule.disableAxisSampling();
+
                 mwBoard.removeRoutes();
             }
         });
@@ -203,5 +209,63 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
         String requiredString = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
 
         return requiredString;
+    }
+
+    public void acceleration_start_onClick(){
+        maccModule.routeData().fromAxes().stream("acc_stream").commit()
+                .onComplete(new AsyncOperation.CompletionHandler<RouteManager>() {
+                    @Override
+                    public void success(RouteManager result) {
+                        result.subscribe("acc_stream", new RouteManager.MessageHandler() {
+                            @Override
+                            public void process(Message msg) {
+                                // Print latest data to LocalLog
+                                //String arg = "acc_stream: " + msg.getData(CartesianFloat.class).toString();
+                                //Log.i(LOG_TAG, arg);
+                                //Log.i("The Coordinates are: ", extractCoord(msg.getData(CartesianFloat.class).toString()));
+
+                                // Append latest data to LocalFile
+                                String arg = "acc_stream: " + msg.getData(CartesianFloat.class).toString();
+                                mlfh.append_line_data(arg);
+                                arg = "acc data appended";
+                                Log.i(LOG_TAG, arg);
+
+                                // Send latest data to ServeSide
+                                // ..
+                            }
+                        });
+                        maccModule.enableAxisSampling();
+                        maccModule.start();
+                    }
+                });
+    }
+    public void gyro_start_onClick(){
+        mgyroModule.routeData().fromAxes().stream("gyro_stream").commit()
+                .onComplete(new AsyncOperation.CompletionHandler<RouteManager>() {
+                    @Override
+                    public void success(RouteManager result) {
+                        result.subscribe("gyro_stream", new RouteManager.MessageHandler() {
+                            @Override
+                            public void process(Message msg) {
+                                // Print latest data to LocalLog
+                                //String arg = "acc_stream: " + msg.getData(CartesianFloat.class).toString();
+                                //Log.i(LOG_TAG, arg);
+                                //Log.i("The Coordinates are: ", extractCoord(msg.getData(CartesianFloat.class).toString()));
+
+                                // Append latest data to LocalFile
+                                String arg = "gyro_stream: " + msg.getData(CartesianFloat.class).toString();
+                                mlfh.append_line_data(arg);
+                                arg = "gyro data appended";
+                                Log.i(LOG_TAG, arg);
+
+                                // Send latest data to ServeSide
+                                // ..
+                            }
+                        });
+
+                        //mgyroModule.enableAxisSampling();
+                        mgyroModule.start();
+                    }
+                });
     }
 }
