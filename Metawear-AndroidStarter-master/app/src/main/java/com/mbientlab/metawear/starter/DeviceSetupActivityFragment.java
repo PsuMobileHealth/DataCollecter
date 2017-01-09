@@ -73,7 +73,8 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
     Temperature mtempModule;
     Led mledModule;
     String mdevInfo;
-    LocalFileHandler mlfh;
+    String mdevInfo_serialNumber;
+    LocalFileHandler mlfh_acc_gyro;
 
     public interface FragmentSettings {
         BluetoothDevice getBtDevice();
@@ -143,7 +144,7 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                     String arg = "Device Information: " + result.toString();
                     Log.i(LOG_TAG, arg);
                     //result.firmwareRevision();
-                    //result.serialNumber();
+                    mdevInfo_serialNumber = result.serialNumber();
                     mdevInfo = result.toString();
                 }
             });
@@ -162,12 +163,13 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
             //Create LocalFile where data is to be saved
             arg = "Create LocalFile where data is to be stored";
             Log.i(LOG_TAG, arg);
-            mlfh = new LocalFileHandler();
+            mlfh_acc_gyro = new LocalFileHandler();
             String datetime = CommonUtils.get_datetime_filename();
-            mlfh.createFile(datetime+".txt");
+            String fname = "board_" + mdevInfo_serialNumber +"_acc_gyro_" + datetime+".txt";
+            mlfh_acc_gyro.createFile(fname);
 
             //Append mdevInfo
-            mlfh.append_line_data(mdevInfo);
+            mlfh_acc_gyro.append_line_data(mdevInfo);
 
             //End
             arg = "End of Board initialization";
@@ -225,8 +227,10 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                                 //Log.i("The Coordinates are: ", extractCoord(msg.getData(CartesianFloat.class).toString()));
 
                                 // Append latest data to LocalFile
-                                String arg = "acc_stream: " + msg.getData(CartesianFloat.class).toString();
-                                mlfh.append_line_data(arg);
+                                String datetime = CommonUtils.get_datetime_iso();
+                                String acc_tuple = msg.getData(CartesianFloat.class).toString();
+                                String arg = "acc_stream: " + datetime +", "+ acc_tuple;
+                                mlfh_acc_gyro.append_line_data(arg);
                                 arg = "acc data appended";
                                 Log.i(LOG_TAG, arg);
 
@@ -253,8 +257,10 @@ public class DeviceSetupActivityFragment extends Fragment implements ServiceConn
                                 //Log.i("The Coordinates are: ", extractCoord(msg.getData(CartesianFloat.class).toString()));
 
                                 // Append latest data to LocalFile
-                                String arg = "gyro_stream: " + msg.getData(CartesianFloat.class).toString();
-                                mlfh.append_line_data(arg);
+                                String datetime = CommonUtils.get_datetime_iso();
+                                String gyro_tuple = msg.getData(CartesianFloat.class).toString();
+                                String arg = "gyro_stream: " + datetime +", "+ gyro_tuple;
+                                mlfh_acc_gyro.append_line_data(arg);
                                 arg = "gyro data appended";
                                 Log.i(LOG_TAG, arg);
 

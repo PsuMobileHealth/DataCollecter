@@ -26,7 +26,8 @@ final public class CommonUtils {
     static public String get_datetime_filename(){
         TimeZone tz = TimeZone.getTimeZone("UTC");
         //DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
-        DateFormat df = new SimpleDateFormat("yyyy_MM_dd'T'HH_mm_ss_SSSSSS'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        //DateFormat df = new SimpleDateFormat("yyyy_MM_dd'T'HH_mm_ss_SSSSSS'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
+        DateFormat df = new SimpleDateFormat("yyyy_MM_dd'T'HH_mm");
         df.setTimeZone(tz);
         String iso_datetime = df.format(new Date());
         return iso_datetime;
