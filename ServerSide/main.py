@@ -307,7 +307,8 @@ if __name__ == "__main__":
         accelparser = AccelFileParser()
         header, acc_arr, gyro_arr = accelparser.parse_re(fname_i)
 
-        acc_arr, gyro_arr = FilterData.gyro_filter_below_treshold(acc_arr, gyro_arr)
+        #acc_arr, gyro_arr = FilterData.gyro_filter_below_treshold(acc_arr, gyro_arr)
+
         acc_arr_list.append(acc_arr)
         gyro_arr_list.append(gyro_arr)
     arg = "len(acc_arr_list) %s" % len(acc_arr_list)
