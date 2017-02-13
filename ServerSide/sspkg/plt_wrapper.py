@@ -101,6 +101,12 @@ class PltWrapper():
                     x_data = accdata_arr[sample_i][0]
                     y_data = accdata_arr[sample_i][1]
                     z_data = accdata_arr[sample_i][2]
+                    #R_ned_frd_1 = [0.492004787849011 0.859333480151217 - 0.139560949498227]
+                    #R_ned_frd_2 = [-0.000000000000000 - 0.160305712067048 - 0.987067413441796]
+                    #R_ned_frd_3 = [-0.870592492922865 0.485641893343103 - 0.078871177856533]
+                    #x_data = +0.492004787849011*x_data +0.859333480151217*y_data -0.139560949498227*z_data
+                    #y_data = -0.000000000000000*x_data -0.160305712067048*y_data -0.987067413441796*z_data
+                    #z_data = -0.870592492922865*x_data +0.485641893343103*y_data -0.078871177856533*z_data
                     U_grid[lim, 0 + deltay, lim] = x_data
                     V_grid[lim, 0 + deltay, lim] = y_data
                     W_grid[lim, 0 + deltay, lim] = z_data

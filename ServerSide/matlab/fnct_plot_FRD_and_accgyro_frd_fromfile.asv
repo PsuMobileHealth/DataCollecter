@@ -1,0 +1,58 @@
+function res = fnct_plot_FRD_and_accgyro_frd_fromfile(filename)
+    %res = function_readfile(filename);
+    [acc_x_arr, acc_y_arr, acc_z_arr, gyro_x_arr, gyro_y_arr, gyro_z_arr] = fnct_readfile(filename);
+    % size(res)
+    % acc_x_arr = res(1)
+    % acc_y_arr = res(2);
+    % acc_z_arr = res(3);
+    % gyro_x_arr = res(4);
+    % gyro_y_arr = res(5);
+    % gyro_z_arr = res(6);
+    % length(acc_x_arr)
+    length(acc_x_arr)
+    %acc_x_arr, acc_y_arr, acc_z_arr, gyro_x_arr, gyro_y_arr, gyro_z_arr
+
+    %Plot init
+    fig = figure;
+
+    for i = 1:length(acc_x_arr); 
+        %Plot NED coord frame
+        ned_n = [1; 0; 0];
+        ned_e = [0; 1; 0];
+        ned_d = [0; 0; 1];
+        starts = zeros(3,3);
+        ends = [transpose(ned_n); transpose(ned_e); transpose(ned_d)];
+        quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'red')
+        hold on;
+
+        %Plot (in FRD coord frame) acc
+        starts = zeros(3,3);
+        res1 = [acc_x_arr(i); acc_y_arr(i); acc_z_arr(i)];
+        ends = [transpose(res1); [0, 0, 0]; [0, 0, 0]];
+        quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'blue')
+        hold on;
+
+        %Plot (in FRD coord frame) gyro
+        starts = zeros(3,3);
+        res1 = R_ned_frd*[acc_x_arr(i); acc_y_arr(i); acc_z_arr(i)];
+        ends = [transpose(res1); [0, 0, 0]; [0, 0, 0]];
+        quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'green')
+        hold off;
+
+        % Plot settings
+        %axis square;
+        %axis equal;
+        axis([-1 1 -1 1 -1 1]);
+        %axis([-0.5 0.5 -0.5 0.5 -0.5 0.5]);
+        xlabel('x-axis (North)');
+        ylabel('y-axis (East)');
+        zlabel('z-axis (Down)');
+        set(gca,'YDir','reverse');
+        set(gca,'ZDir','reverse');
+        %text(0.5,0,' \leftarrow sin(\pi)','FontSize',18) 
+        %hold off;
+        drawnow;
+        pause(0.01);
+    end
+    res = 0;
+end

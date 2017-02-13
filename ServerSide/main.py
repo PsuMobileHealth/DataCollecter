@@ -1,10 +1,27 @@
 
 import sys
 
-from sspkg import file_parser, plt_wrapper, filters
+from sspkg import file_parser, plt_wrapper, methods
 
 
 if __name__ == "__main__":
+
+    debug = 1
+    if debug == 1:
+        fname_arr = []
+        for i in range(1, len(sys.argv)):
+            fname_arr.append(sys.argv[i])
+        accgyro_fparser = file_parser.AccGyroFileParser()
+        accgyro_parsedf_arr = accgyro_fparser.parse_files(fname_arr)
+
+        mmethods = methods.Gnrl()
+        mmethods.statinfo(accgyro_parsedf_arr[0], 0, 50)
+        mmethods.find_dcm(accgyro_parsedf_arr[0], 0, 50)
+
+        accgyro_fparser.to_file(accgyro_parsedf_arr)
+
+        sys.exit(0)
+    ###############s######################################
     # fname = "../test/2016_12_06_v2_toopazo.txt"
     fname_list = []
     for i in range(1, len(sys.argv)):
@@ -15,8 +32,8 @@ if __name__ == "__main__":
     gyrotime_arr_list = []
     for fname_i in fname_list:
         print(fname_i)
-        fileparser = file_parser.AccGyroFileParser()
-        header, acc_time_arr, acc_data_arr, gyro_time_arr, gyro_data_arr = fileparser.parse_re(fname_i)
+        accgyro_fparser = file_parser.AccGyroFileParser()
+        header, acc_time_arr, acc_data_arr, gyro_time_arr, gyro_data_arr = accgyro_fparser.parse_re(fname_i)
 
         # acc_arr, gyro_arr = filters.FilterData.gyro_filter_below_treshold(acc_arr, gyro_arr)
 

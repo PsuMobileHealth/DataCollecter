@@ -2,7 +2,79 @@ import re
 import datetime
 
 
+class AccGyroParsedFile():
+    filename = ""
+    header = ""
+    acc_t_arr = []
+    acc_x_arr = []
+    acc_y_arr = []
+    acc_z_arr = []
+    acc_len = 0
+    gyro_t_arr = []
+    gyro_x_arr = []
+    gyro_y_arr = []
+    gyro_z_arr = []
+    gyro_len = 0
+
+    def __init__(self):
+        pass
+
+
+
 class AccGyroFileParser():
+    def to_file(self, parsedfile_arr):
+        for parsedfile_i in parsedfile_arr:
+            fname_i = parsedfile_i.filename
+            header_i = parsedfile_i.header
+            # write file acc_x acc_y acc_z gyro_x gyro_y gyro_z
+            fname_i = fname_i.replace('.txt', '_parsed.txt')
+            fd = open(fname_i, 'w')
+            for i in range(0,parsedfile_i.acc_len):
+                arg = "%s %s %s %s %s %s\r\n" % \
+                      (parsedfile_i.acc_x_arr[i], parsedfile_i.acc_y_arr[i], parsedfile_i.acc_z_arr[i],
+                       parsedfile_i.gyro_x_arr[i], parsedfile_i.gyro_y_arr[i], parsedfile_i.gyro_z_arr[i])
+                fd.write(arg)
+            fd.close()
+
+
+    def parse_files(self, fname_arr):
+        parsedfile_arr = []
+        for fname_i in fname_arr:
+            header, acc_time_arr, acc_data_arr, gyro_time_arr, gyro_data_arr = self.parse_re(fname_i)
+
+            parsedfile = AccGyroParsedFile()
+            parsedfile.filename = fname_i
+            parsedfile.header = header
+
+            # print(acc_data_arr[0])
+            # print(acc_data_arr[1])
+            # print(acc_data_arr[2])
+            # a = [tuple_i[0] for tuple_i in acc_data_arr]
+            # print(a)
+            parsedfile.acc_t_arr = acc_time_arr
+            parsedfile.acc_x_arr = [tuple_i[0] for tuple_i in acc_data_arr]
+            parsedfile.acc_y_arr = [tuple_i[1] for tuple_i in acc_data_arr]
+            parsedfile.acc_z_arr = [tuple_i[2] for tuple_i in acc_data_arr]
+            parsedfile.acc_len = len(acc_data_arr)
+
+            parsedfile.gyro_t_arr = gyro_time_arr
+            parsedfile.gyro_x_arr = [tuple_i[0] for tuple_i in gyro_data_arr]
+            parsedfile.gyro_y_arr = [tuple_i[1] for tuple_i in gyro_data_arr]
+            parsedfile.gyro_z_arr = [tuple_i[2] for tuple_i in gyro_data_arr]
+            parsedfile.gyro_len = len(gyro_data_arr)
+
+            arg = "parsedfile.filename %s" % parsedfile.filename
+            print(arg)
+            arg = "parsedfile.acc_len %s" % parsedfile.acc_len
+            print(arg)
+            arg = "parsedfile.gyro_len %s" % parsedfile.gyro_len
+            print(arg)
+            arg = "**********************************"
+            print(arg)
+
+            parsedfile_arr.append(parsedfile)
+        return parsedfile_arr
+
     def parse_re(self, fname):
         match_non_a_z_chars = '[^a-z]'
         re_whitespace = '\s'     # Matches any whitespace character; this is equivalent to the class [ \t\n\r\f\v].
@@ -92,18 +164,18 @@ class AccGyroFileParser():
         # print(arg)
         # arg = "header len = 1"
         # print(arg)
-        arg = "acctime len = %s" % len(acctime_arr)
-        print(arg)
-        arg = "accdata len = %s" % len(accdata_arr)
-        print(arg)
-        arg = "gyrotime len = %s" % len(gyrotime_arr)
-        print(arg)
-        arg = "gyrodata len = %s" % len(gyrodata_arr)
-        print(arg)
-        arg = "header + acc + gyro = %s" % (len(accdata_arr)+len(gyrodata_arr)+1)
-        print(arg)
-        arg = "lines in file = %s" % nlines
-        print(arg)
+        # arg = "acctime len = %s" % len(acctime_arr)
+        # print(arg)
+        # arg = "accdata len = %s" % len(accdata_arr)
+        # print(arg)
+        # arg = "gyrotime len = %s" % len(gyrotime_arr)
+        # print(arg)
+        # arg = "gyrodata len = %s" % len(gyrodata_arr)
+        # print(arg)
+        # arg = "header + acc + gyro = %s" % (len(accdata_arr)+len(gyrodata_arr)+1)
+        # print(arg)
+        # arg = "lines in file = %s" % nlines
+        # print(arg)
 
         return (header, acctime_arr, accdata_arr, gyrotime_arr, gyrodata_arr)
 

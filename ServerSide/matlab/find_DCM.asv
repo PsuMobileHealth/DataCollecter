@@ -1,0 +1,159 @@
+clear;      % clears variables
+%clear all;  % clear vars, breakpoints, persistent vars and cached memory
+clc;        % clears the command window
+%format long; 
+%format short;
+format compact; 
+
+%q0 = [0.5; 0.5; 0.5; 0.5];
+Phi0 = [0; 0; 0];
+x0 = Phi0;
+gravity_frd = [-0.91684; 0.51144,; -0.08306]./1.0531217511759978
+gravity_frd_magn = sqrt(dot(gravity_frd,gravity_frd));
+v_ned = [0; 0; 1];
+res = function_find_DCM(gravity_frd, v_ned, x0)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% res is Phi = phi theta psi
+phi = res(1);
+theta = res(2);
+psi = res(3);
+%phi = pi/8;
+%theta = 0;
+%psi = 0;
+Phi_deg = [phi*180/pi; theta*180/pi; psi*180/pi]
+c11 = cos(theta)*cos(psi);
+c12 = cos(theta)*sin(psi);
+c13 = -sin(theta);
+c21 = -cos(phi)*sin(psi) + sin(phi)*sin(theta)*cos(psi);
+c22 = cos(phi)*cos(psi) + sin(phi)*sin(theta)*sin(psi);
+c23 = sin(phi)*cos(theta);
+c31 = sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi);
+c32 = -sin(phi)*cos(psi) + cos(phi)*sin(theta)*sin(psi);
+c33 = cos(phi)*cos(theta);
+R_frd_ned = [c11, c12, c13; c21, c22, c23; c31, c32, c33];
+R_ned_frd = R_frd_ned^(-1)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% res is a quaternion
+% q_frd_ned = res
+% q0 = q_frd_ned(1);
+% q1 = q_frd_ned(2);
+% q2 = q_frd_ned(3);
+% q3 = q_frd_ned(3);
+% c11 = q0^2 + q1^2 - q2^2 - q3^2;
+% c12 = 2*(q1*q2 + q0*q3);
+% c13 = 2*(q1*q3 - q0*q2);
+% c21 = 2*(q0*q1 - q0*q2);
+% c22 = q0^2 - q1^2 + q2^2 - q3^2;
+% c23 = 2*(q2*q3 + q0*q1);
+% c31 = 2*(q1*q3 + q0*q2);
+% c32 = 2*(q2*q3 - q0*q1);
+% c33 = q0^2 - q1^2 - q2^2 + q3^2;
+% R_frd_ned = [c11, c12, c13; c21, c22, c23; c31, c32, c33]
+% phi = atan2(c23,c33)
+% theta = -asin(c13)
+% psi = atan2(c12,c11)
+% %Initialize quaternion
+% q_frd_ned2 = [
+%     cos(phi/2)*cos(theta/2)*cos(psi/2)+sin(phi/2)*sin(theta/2)*sin(psi/2); ...
+%     sin(phi/2)*cos(theta/2)*cos(psi/2)-cos(phi/2)*sin(theta/2)*sin(psi/2); ...
+%     cos(phi/2)*sin(theta/2)*cos(psi/2)+sin(phi/2)*cos(theta/2)*sin(psi/2); ... 
+%     cos(phi/2)*cos(theta/2)*sin(psi/2)-sin(phi/2)*sin(theta/2)*cos(psi/2)
+%     ];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Plot init
+fig = figure;
+
+%Plot NED coord frame
+ned_n = [1; 0; 0];
+ned_e = [0; 1; 0];
+ned_d = [0; 0; 1];
+starts = zeros(3,3);
+ends = [transpose(ned_n); transpose(ned_e); transpose(ned_d)];
+quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'red')
+hold on;
+
+%Plot (in NED coord frame) FRD coord frame
+frd_f = R_ned_frd*[1; 0; 0];
+frd_r = R_ned_frd*[0; 1; 0];
+frd_d = R_ned_frd*[0; 0; 1];
+%frd_f = R_frd_ned*[1; 0; 0];
+%frd_r = R_frd_ned*[0; 1; 0];
+%frd_d = R_frd_ned*[0; 0; 1];
+%checking FRD coord frame propierties
+dot_fr = dot(frd_f, frd_r)
+dot_rd = dot(frd_r, frd_d)
+dot_dr = dot(frd_d, frd_r)
+frd_f_magn = sqrt(dot(frd_f,frd_f))
+frd_r_magn = sqrt(dot(frd_r,frd_r))
+frd_d_magn = sqrt(dot(frd_d,frd_d))
+starts = zeros(3,3);
+ends = [transpose(frd_f); transpose(frd_r); transpose(frd_d)];
+quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'blue')
+hold on;
+ends = [transpose(frd_f); [0, 0, 0]; [0, 0, 0]];
+quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'black')
+
+%Plot (in NED coord frame) gravity_ned = R_ned_frd*gravity_frd;
+starts = zeros(3,3);
+gravity_ned = R_ned_frd*gravity_frd;
+gravity_frd2 = R_frd_ned*[0; 0; -1]
+ends = [transpose(gravity_ned); [0, 0, 0]; [0, 0, 0]];
+quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'green')
+hold on;
+
+% Plot settings
+%axis square;
+axis equal;
+%axis([-1 1 -1 1 -1 1]);
+%axis([-0.5 0.5 -0.5 0.5 -0.5 0.5]);
+xlabel('x-axis (North)');
+ylabel('y-axis (East)');
+zlabel('z-axis (Down)');
+set(gca,'YDir','reverse');
+set(gca,'ZDir','reverse');
+%text(0.5,0,' \leftarrow sin(\pi)','FontSize',18) 
+hold off;
+
+filename = '../../tests/board_00CADE_acc_gyro_andrea1_parsed.txt';
+%res = function_readfile(filename);
+[acc_x_arr, acc_y_arr, acc_z_arr, gyro_x_arr, gyro_y_arr, gyro_z_arr] = function_readfile(filename);
+% size(res)
+% acc_x_arr = res(1)
+% acc_y_arr = res(2);
+% acc_z_arr = res(3);
+% gyro_x_arr = res(4);
+% gyro_y_arr = res(5);
+% gyro_z_arr = res(6);
+% length(acc_x_arr)
+length(acc_x_arr)
+%acc_x_arr, acc_y_arr, acc_z_arr, gyro_x_arr, gyro_y_arr, gyro_z_arr
+
+%Plot init
+fig = figure;
+
+for i = 1:length(acc_x_arr); 
+    %Plot (in NED coord frame) gravity_ned = R_ned_frd*gravity_frd;
+    starts = zeros(3,3);
+    res1 = R_ned_frd*[acc_x_arr(i); acc_y_arr(i); acc_z_arr(i)];
+    ends = [transpose(res1); [0, 0, 0]; [0, 0, 0]];
+    quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'blue')
+    %hold on;
+    
+    % Plot settings
+  
+    %axis square;
+    %axis equal;
+    axis([-1 1 -1 1 -1 1]);
+    %axis([-0.5 0.5 -0.5 0.5 -0.5 0.5]);
+    xlabel('x-axis (North)');
+    ylabel('y-axis (East)');
+    zlabel('z-axis (Down)');
+    set(gca,'YDir','reverse');
+    set(gca,'ZDir','reverse');
+    %text(0.5,0,' \leftarrow sin(\pi)','FontSize',18) 
+    %hold off;
+    
+    %pause(0.5);
+end
+
