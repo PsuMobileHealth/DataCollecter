@@ -6,73 +6,73 @@ clc;        % clears the command window
 format compact; 
 
 %q0 = [0.5; 0.5; 0.5; 0.5];
-Phi0 = [0; 0; 0];
-x0 = Phi0;
-gravity_frd = [-0.91684; 0.51144,; -0.08306]./1.0531217511759978
-gravity_frd_magn = sqrt(dot(gravity_frd,gravity_frd));
-v_ned = [0; 0; 1];
-res = fnct_find_DCM(gravity_frd, v_ned, x0)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% res is Phi = phi theta psi
-phi = res(1);
-theta = res(2);
-psi = res(3);
-%phi = pi/8;
-%theta = 0;
-%psi = 0;
-Phi_deg = [phi*180/pi; theta*180/pi; psi*180/pi]
-c11 = cos(theta)*cos(psi);
-c12 = cos(theta)*sin(psi);
-c13 = -sin(theta);
-c21 = -cos(phi)*sin(psi) + sin(phi)*sin(theta)*cos(psi);
-c22 = cos(phi)*cos(psi) + sin(phi)*sin(theta)*sin(psi);
-c23 = sin(phi)*cos(theta);
-c31 = sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi);
-c32 = -sin(phi)*cos(psi) + cos(phi)*sin(theta)*sin(psi);
-c33 = cos(phi)*cos(theta);
-R_frd_ned = [c11, c12, c13; c21, c22, c23; c31, c32, c33];
-R_ned_frd = R_frd_ned^(-1)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% res is a quaternion
-% q_frd_ned = res
-% q0 = q_frd_ned(1);
-% q1 = q_frd_ned(2);
-% q2 = q_frd_ned(3);
-% q3 = q_frd_ned(3);
-% c11 = q0^2 + q1^2 - q2^2 - q3^2;
-% c12 = 2*(q1*q2 + q0*q3);
-% c13 = 2*(q1*q3 - q0*q2);
-% c21 = 2*(q0*q1 - q0*q2);
-% c22 = q0^2 - q1^2 + q2^2 - q3^2;
-% c23 = 2*(q2*q3 + q0*q1);
-% c31 = 2*(q1*q3 + q0*q2);
-% c32 = 2*(q2*q3 - q0*q1);
-% c33 = q0^2 - q1^2 - q2^2 + q3^2;
-% R_frd_ned = [c11, c12, c13; c21, c22, c23; c31, c32, c33]
-% phi = atan2(c23,c33)
-% theta = -asin(c13)
-% psi = atan2(c12,c11)
-% %Initialize quaternion
-% q_frd_ned2 = [
-%     cos(phi/2)*cos(theta/2)*cos(psi/2)+sin(phi/2)*sin(theta/2)*sin(psi/2); ...
-%     sin(phi/2)*cos(theta/2)*cos(psi/2)-cos(phi/2)*sin(theta/2)*sin(psi/2); ...
-%     cos(phi/2)*sin(theta/2)*cos(psi/2)+sin(phi/2)*cos(theta/2)*sin(psi/2); ... 
-%     cos(phi/2)*cos(theta/2)*sin(psi/2)-sin(phi/2)*sin(theta/2)*cos(psi/2)
-%     ];
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Phi = [0; 0; 0];
+avg_gravity_frd = [-0.91684; 0.51144,; -0.08306]./1.0531217511759978;
+avg_gravity_frd_magn = sqrt(dot(avg_gravity_frd,avg_gravity_frd));
+v_ned = [0; 0; 1];  % gravity is (0; 0; 1[g]) 
 
-gravity_frd2 = R_frd_ned*[0; 0; -1]
-gravity_frd = gravity_frd
-%fnct_plot_in_NED_v_frd(R_ned_frd, gravity_frd);
+fsolve_mode = 2;
+if fsolve_mode == 1 || fsolve_mode == 3
+    disp('******************************')
+    disp('Using fsolve with quat, Phi = [phi, theta, psi]')
+    %q0 = [cos(2*pi/3), sin(2*pi/3).*[0.5, 0.5, 1]];
+    q0 = [0.5, 0.5, 0.5, 0.5];
+    %q0 = [0, 0, 0, 0];
+    q_ned_frd = fnct_find_q_ned_frd(avg_gravity_frd, v_ned, q0)
+    [Phi(3), Phi(2), Phi(1)] = quat2angle(q_ned_frd,'ZYX');
+    Phi_deg = [Phi(1)*180/pi; Phi(2)*180/pi; Phi(3)*180/pi]
+    R_ned_frd = fnct_quat_to_DCM(q_ned_frd)
+end
+if fsolve_mode == 2 || fsolve_mode == 3
+    disp('******************************')
+    disp('Using fsolve with DCM, Phi = [phi, theta, psi]')
+    Phi0 = [0; 0; 0];
+    Phi = fnct_find_Phi_frd_ned(avg_gravity_frd, v_ned, Phi0);
+    Phi_deg = [Phi(1)*180/pi; Phi(2)*180/pi; Phi(3)*180/pi]
+    R_ned_frd = fnct_Phi_to_R_ned_frd(Phi);
+    q_frd_ned = angle2quat(Phi(3), Phi(2), Phi(1),'ZYX');
+    q_ned_frd = quatinv(q_frd_ned)
+    R_ned_frd = quat2dcm(q_ned_frd)
+end
+if fsolve_mode == 3
+    return
+end
 
-%filename = '../../tests/board_00CADE_acc_gyro_andrea1_parsed.txt';
-%fnct_plot_in_FRD_accgyro_frd_fromfile(filename)
-
-%filename = '../../tests/board_00CADE_acc_gyro_andrea1_parsed.txt';
-%fnct_plot_in_NED_accgyro_frd_fromfile(filename, R_ned_frd)
-
-%filename = '../../tests/board_00CADE_acc_gyro_andrea1_parsed.txt';
-%fnct_plot_accgyro_magn_fromfile(filename)
+% avg_gravity_frd2 = R_frd_ned*[0; 0; -1]
+% avg_gravity_frd = avg_gravity_frd
+% fnct_plot_in_NED_v_FRD(R_ned_frd, avg_gravity_frd);
 
 freq = 25;
-deltat_ms = 1/freq
+dt = 1/freq;
+filename = '../../tests/board_00CADE_acc_gyro_andrea1_parsed.txt';
+[acc_x_arr, acc_y_arr, acc_z_arr, gyro_x_arr, gyro_y_arr, gyro_z_arr] = ...
+    fnct_readfile(filename);
+gyro_x_arr = gyro_x_arr.*pi./180;
+gyro_y_arr = gyro_y_arr.*pi./180;
+gyro_z_arr = gyro_z_arr.*pi./180;
+gyro_arr = [...
+    transpose(gyro_x_arr), ...
+    transpose(gyro_y_arr), ...
+    transpose(gyro_z_arr) ...
+    ];
+acc_arr = [...
+    transpose(acc_x_arr), ...
+    transpose(acc_y_arr), ...
+    transpose(acc_z_arr) ...
+    ];
+
+% fnct_plot_in_FRD_accgyro_FRD(acc_x_arr, acc_y_arr, acc_z_arr,...
+%     gyro_x_arr, gyro_y_arr, gyro_z_arr)
+
+fnct_plot_in_NED_accgyro_FRD(acc_x_arr, acc_y_arr, acc_z_arr,...
+    gyro_x_arr, gyro_y_arr, gyro_z_arr, R_ned_frd)
+
+fnct_plot_accgyro_magn(acc_x_arr, acc_y_arr, acc_z_arr,...
+    gyro_x_arr, gyro_y_arr, gyro_z_arr, dt)
+
+euler_ang0 = [0;0;0];
+[time_arr, euler_ang_arr] = fnct_integrate_angrates_to_eulerang(...
+    gyro_arr, dt, euler_ang0);
+
+fnct_plot_in_NED_eulerang_FRD(euler_ang_arr)
+

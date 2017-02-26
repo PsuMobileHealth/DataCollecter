@@ -1,4 +1,4 @@
-function res = fnct_plot_in_NED_v_frd(R_ned_frd, v_frd)
+function res = fnct_plot_in_NED_v_FRD(R_ned_frd, v_frd)
     %Plot init
     fig = figure;
 

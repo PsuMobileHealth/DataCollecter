@@ -1,8 +1,8 @@
-function res = function_find_DCM(v_frd, v_ned, x0)
+function res = fnct_find_Phi_frd_ned(v_frd, v_ned, x0)
     res = fsolve(@function2, x0);
     %function2(res)
     
-    function val = function2(x)
+    function [fx] = function2(x)
 %         q0 = x(1);
 %         q1 = x(2);
 %         q2 = x(3);
@@ -31,6 +31,8 @@ function res = function_find_DCM(v_frd, v_ned, x0)
         c33 = cos(phi)*cos(theta);
         
         R_frd_ned = [c11, c12, c13; c21, c22, c23; c31, c32, c33];
-        val = R_frd_ned*v_ned - v_frd;
+        f1 = R_frd_ned*v_ned - v_frd;
+        f2 = [0; 0; psi];   % No heading difference between NED and FRD
+        fx = [f1 f2];
     end
 end

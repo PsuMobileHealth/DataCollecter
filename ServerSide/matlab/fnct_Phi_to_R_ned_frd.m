@@ -1,0 +1,19 @@
+function R_ned_frd = fnct_Phi_to_R_ned_frd(Phi)      
+    phi = Phi(1);
+    theta = Phi(2);
+    psi = Phi(3);
+    %phi = pi/8;
+    %theta = 0;
+    %psi = 0;
+    c11 = cos(theta)*cos(psi);
+    c12 = cos(theta)*sin(psi);
+    c13 = -sin(theta);
+    c21 = -cos(phi)*sin(psi) + sin(phi)*sin(theta)*cos(psi);
+    c22 = cos(phi)*cos(psi) + sin(phi)*sin(theta)*sin(psi);
+    c23 = sin(phi)*cos(theta);
+    c31 = sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi);
+    c32 = -sin(phi)*cos(psi) + cos(phi)*sin(theta)*sin(psi);
+    c33 = cos(phi)*cos(theta);
+    R_frd_ned = [c11, c12, c13; c21, c22, c23; c31, c32, c33];
+    R_ned_frd = R_frd_ned^(-1);
+end
