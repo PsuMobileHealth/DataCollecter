@@ -1,7 +1,7 @@
 function res = flatEarth_plot_pos_vel(x_arr)
     %Plot init
     fig = figure;
-    for i = 1:length(x_arr); 
+    for i = 1:size(x_arr,2)
         %Plot NED coord frame
         ned_n = [1; 0; 0];
         ned_e = [0; 1; 0];

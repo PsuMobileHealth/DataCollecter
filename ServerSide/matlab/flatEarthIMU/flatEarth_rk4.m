@@ -1,4 +1,4 @@
-function [xnew]= flatEarth_rk4(fdyn, finp, time, dt, xcurr, u0)
+function [xnew]= flatEarth_rk4(fdyn, finp, time, dt, xcurr, u0, params)
 
 %Performs 4th order Runge-Kutta Integration of the equations xdot=f(t,x,u)
 % Function fdyn is dynamic model.
@@ -8,18 +8,18 @@ function [xnew]= flatEarth_rk4(fdyn, finp, time, dt, xcurr, u0)
 % Value of state vector at current time = xcurr
 % Returns state vector at time t+dt
 
-u = feval(finp,time,u0);
+u = feval(finp,time,u0,params);
 [xd,y] = feval(fdyn,time,xcurr,u);
 k1 = dt*xd;
 
-u = feval(finp,time+0.5*dt,u0);
+u = feval(finp,time+0.5*dt,u0,params);
 [xd,y] = feval(fdyn,time+0.5*dt,xcurr+0.5*k1,u);
 k2 = dt*xd;
 
 [xd,y] = feval(fdyn,time+0.5*dt,xcurr+0.5*k2,u);
 k3 = dt*xd;
 
-u = feval(finp,time+dt,u0);
+u = feval(finp,time+dt,u0,params);
 [xd,y] = feval(fdyn,time+dt,xcurr+k3,u);
 k4 = dt*xd;
 

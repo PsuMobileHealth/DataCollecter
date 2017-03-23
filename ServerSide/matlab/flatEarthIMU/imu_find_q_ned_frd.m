@@ -1,4 +1,4 @@
-function res = fnct_find_q_ned_frd(v_frd, v_ned, x0)
+function res = imu_find_q_ned_frd(v_ned, v_frd, psi, x0)
     %x0 = transpose(x0);
     v_frd = transpose(v_frd);
     v_ned = transpose(v_ned);
@@ -7,33 +7,28 @@ function res = fnct_find_q_ned_frd(v_frd, v_ned, x0)
     %function2(res)
     
     function [fx] = function2(x)
-        q = [x(1) x(2) x(3) x(4)];
-        %q_norm = x(1)^2 + x(2)^2 + x(3)^2 + x(4)^2;
-        r = [0, v_frd];
-        n = [0, v_ned];
-        
-        % n = quatinv(q)
-        % n = quatnorm(q)
-        % n = quatrotate(q, r)
-        % n = quatmultiply(q,r)
+        q0 = x(1);
+        q1 = x(2);
+        q2 = x(3);
+        q3 = x(4);
+        q = [q0 q1 q2 q3];
+        r = v_frd;
+        n = v_ned;
+%         r = [0, v_frd];
+%         n = [0, v_ned];
                 
         % We are looking for a solution to 
         % n = quatinv(q)*r*q
         % 1.0 = quatnorm(q)
+        % atan2(c12(q), c11(q)) = 0
         
         f1 = quatnorm(q) - 1;
-        %f2 = quatinv(q)*r*q - n
-        r = []
-        f2 = quatrotate(q, r) - n;
-        %f2 = quatmultiply( quatmultiply(quatinv(q),r), q ) - n;
-%         q0 = x(1);
-%         q1 = x(2);
-%         q2 = x(3);
-%         q3 = x(4);
-%         c11 = q0^2 + q1^2 - q2^2 - q3^2;
-%         c12 = 2*(q1*q2 + q0*q3);
-%         f3 = atan2(c12,c11);    % psi = 0° ()
-        f3 = 0;
+        f2 = quatrotate(q, r) - n;  % quatinv(q)*r*q - n
+        c11 = q0^2 + q1^2 - q2^2 - q3^2;
+        c12 = 2*(q1*q2 + q0*q3);
+        f3 = atan2(c12,c11) - psi;    % No heading difference between NED and FRD
+        %f3 = 0;
+        
         fx = [f1 f2 f3];
         
 %         q0 = x(1);

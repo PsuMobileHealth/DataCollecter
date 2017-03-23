@@ -11,7 +11,7 @@ function res = flatEarth_plot_vel_trajectory(x_arr)
     quiver3(starts(:,1), starts(:,2), starts(:,3), ends(:,1), ends(:,2), ends(:,3), 'black')
     hold on;
 
-    for i = 1:length(x_arr);
+    for i = 1:size(x_arr,2)
         Phi = [x_arr(4,i); x_arr(5,i); x_arr(6,i)];
         phi = Phi(1);
         theta = Phi(2);
